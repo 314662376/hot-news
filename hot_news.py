@@ -804,6 +804,7 @@ def build_rows(clusters):
             "dir": polarity(full), "url": rep["url"],
             "recap": bool(RECAP_PAT.search(rep["title"] or "")),
             "rel_title": any(i.get("rel_title") for i in its),
+            "is_search": any("kw_hits" in i for i in its),
         })
 
     if not rows:
@@ -818,6 +819,9 @@ def build_rows(clusters):
         if r["recap"]:
             r["score"] = round(r["score"] * 0.75, 1)
             r["dir"] = "中性"
+        # 检索模式下，只靠正文顺带提及（标题没提该行业）的同样大幅降权
+        if r["is_search"] and not r["rel_title"]:
+            r["score"] = round(r["score"] * 0.6, 1)
     rows.sort(key=lambda r: -r["score"])
     return rows
 
@@ -944,8 +948,471 @@ def to_html(rows, start, end, top, heading=None, scope_label="时段", kw_line=N
 # main
 # ----------------------------------------------------------------------------
 
+INDEX_TEMPLATE = r"""<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+  :root{--bg:#f7f7f5;--card:#fff;--line:#e6e4de;--txt:#22221f;--muted:#77776f;
+        --up:#c0392b;--down:#1e8449;--accent:#185FA5}
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 16px 56px;background:var(--bg);color:var(--txt);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:21px;font-weight:600;margin:0 0 4px}
+  h2{font-size:14px;font-weight:600;margin:28px 0 10px;color:var(--muted)}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .searchbar{display:flex;gap:8px}
+  .searchbar input{flex:1;min-width:0;font-size:15px;padding:11px 13px;border:1px solid var(--line);
+       border-radius:10px;background:var(--card);color:var(--txt);outline:none;font-family:inherit}
+  .searchbar input:focus{border-color:var(--accent)}
+  .searchbar button{flex:0 0 auto;font-size:15px;font-weight:500;padding:11px 22px;border:none;
+       border-radius:10px;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit}
+  .searchbar button:disabled{opacity:.55;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-size:12px;padding:4px 11px;border-radius:20px;background:#eef0f3;color:#4a5568;
+        cursor:pointer;user-select:none}
+  .chip:hover{background:var(--accent);color:#fff}
+  .opts{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:12px;color:var(--muted)}
+  .opts label{display:flex;align-items:center;gap:5px}
+  .opts select{font-size:12px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;
+        background:var(--card);color:var(--txt);font-family:inherit}
+  #status{font-size:12px;color:var(--muted);margin-top:16px;min-height:18px}
+  .card{display:flex;gap:14px;background:var(--card);border:1px solid var(--line);
+        border-radius:12px;padding:15px;margin-bottom:10px}
+  .rank{flex:0 0 26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;
+        font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+  .body{flex:1;min-width:0}
+  .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+  .score{font-size:15px;font-weight:600;color:var(--accent)}
+  .dir{font-size:12px;padding:1px 7px;border-radius:4px;font-weight:500}
+  .dir.up{background:#fdeaea;color:var(--up)}
+  .dir.down{background:#e8f6ee;color:var(--down)}
+  .dir.flat{background:#f0efeb;color:var(--muted)}
+  .meta{font-size:12px;color:var(--muted)}
+  .title{font-size:15px;font-weight:600;margin:2px 0 6px}
+  .title a{color:inherit;text-decoration:none}
+  .title a:hover{color:var(--accent)}
+  .res{font-size:12px;color:var(--muted);margin-bottom:7px}
+  .res b{color:var(--accent)}
+  .summary{font-size:13px;color:#44443f;margin-bottom:9px}
+  .chips2{display:flex;flex-wrap:wrap;gap:6px}
+  .chips2 span{font-size:12px;padding:2px 8px;border-radius:4px}
+  .kw{background:#f0efeb;color:#66665e}
+  .src{background:#eaf1fa;color:#185FA5}
+  mark{background:#fff3c4;color:inherit;padding:0 1px;border-radius:2px}
+  .row{display:flex;align-items:center;gap:10px;background:var(--card);
+       border:1px solid var(--line);border-radius:10px;padding:11px 14px;
+       margin-bottom:8px;text-decoration:none;color:inherit}
+  .row:hover{border-color:var(--accent)}
+  .tag{flex:0 0 auto;font-size:11px;padding:2px 7px;border-radius:4px}
+  .tag.hot{background:#eaf1fa;color:#185FA5}
+  .tag.search{background:#fdf0e8;color:#b5530f}
+  .name{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .time{flex:0 0 auto;font-size:12px;color:var(--muted)}
+  .empty{color:var(--muted);font-size:13px;padding:16px 0}
+  .note{font-size:12px;color:var(--muted);margin-top:14px;padding-top:12px;
+        border-top:1px solid var(--line)}
+</style></head><body><div class="wrap">
+  <h1>财经热点 · 行业检索</h1>
+  <div class="sub">输入行业关键词，实时检索全网财经新闻（结果在浏览器本地排序，无后端）</div>
+
+  <div class="searchbar">
+    <input id="q" placeholder="PCB / 半导体 / 固态电池 / 覆铜板…" autocomplete="off">
+    <button id="go">搜索</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="opts">
+    <label>时间
+      <select id="days">
+        <option value="3">近 3 天</option>
+        <option value="7" selected>近 7 天</option>
+        <option value="14">近 14 天</option>
+        <option value="30">近 30 天</option>
+        <option value="90">近 90 天</option>
+      </select>
+    </label>
+    <label>条数
+      <select id="top">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+      </select>
+    </label>
+    <label>排序
+      <select id="sort">
+        <option value="hot" selected>按重要性</option>
+        <option value="time">按时间</option>
+      </select>
+    </label>
+  </div>
+
+  <div id="status"></div>
+  <div id="results"></div>
+
+  <div id="reports">
+    <h2>最近生成的报告</h2>
+    __ROWS__
+    <div class="note">检索由东方财富站内搜索提供数据；打分规则与仓库里的 <code>hot_news.py</code> 一致。</div>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  var PRESETS = ["PCB","半导体","固态电池","光伏","锂电","机器人","算力","军工","医药","白酒","稀土","消费电子"];
+
+  // 与 hot_news.py 的 SECTOR_ALIAS 保持一致
+  var ALIAS = {
+    "PCB": ["PCB","覆铜板","印制电路板","线路板","HDI","IC载板","CCL","铜箔"],
+    "半导体": ["半导体","芯片","晶圆","光刻","封测","集成电路","存储芯片","先进封装"],
+    "光伏": ["光伏","硅片","电池片","组件","逆变器","多晶硅","TOPCon","HJT"],
+    "锂电": ["锂电","动力电池","正极材料","负极材料","隔膜","电解液","固态电池"],
+    "机器人": ["机器人","人形机器人","减速器","伺服电机","灵巧手","丝杠"],
+    "算力": ["算力","AI服务器","GPU","液冷","光模块","CPO","交换机","数据中心"],
+    "军工": ["军工","国防","航空发动机","导弹","卫星","商业航天"],
+    "医药": ["医药","创新药","生物医药","CXO","医疗器械","疫苗","集采"],
+    "白酒": ["白酒","酱酒","次高端","高端酒"],
+    "房地产": ["房地产","地产","楼市","保交楼","保障房"],
+    "券商": ["券商","证券","投行","两融","并购重组"],
+    "稀土": ["稀土","永磁","磁材","镨钕","稀有金属"],
+    "消费电子": ["消费电子","苹果链","果链","折叠屏","AR","VR","智能穿戴"],
+    "汽车": ["汽车","新能源车","整车","智能驾驶","零部件","出海"]
+  };
+
+  // 与 hot_news.py 的 KEYWORD_WEIGHT 保持一致
+  var KW = {"降准":6,"降息":6,"央行":5,"LPR":5,"MLF":4,"逆回购":4,"政治局":6,"国务院":5,
+    "国常会":5,"中央经济工作会议":6,"证监会":5,"印花税":5,"注册制":5,"发改委":4,"财政部":4,
+    "国资委":4,"工信部":4,"能源局":4,"外汇局":4,"爆雷":6,"造假":6,"退市":5,"立案":5,
+    "破产":5,"违约":5,"被查":5,"减持":4,"违规":4,"处罚":4,"冻结":4,"警示函":4,"监管函":4,
+    "问询":3,"借壳":6,"重组":5,"并购":5,"资产注入":5,"易主":5,"实控人变更":5,"收购":4,
+    "要约":4,"股权转让":3,"业绩预告":4,"预增":4,"预减":4,"扭亏":4,"超预期":4,"净利润":3,
+    "亏损":3,"涨停":5,"跌停":5,"连板":5,"北向资金":4,"龙虎榜":4,"游资":4,"IPO":4,"两融":3,
+    "主力资金":3,"关税":6,"制裁":6,"出口管制":6,"实体清单":6,"贸易战":6,"战争":6,"冲突":5,
+    "袭击":5,"停火":4,"美联储":5,"加息":5,"非农":4,"CPI":4,"PPI":3,"GDP":4,"稀土":4,
+    "固态电池":4,"可控核聚变":4,"房地产":4,"地方债":4,"人工智能":3,"算力":3,"芯片":3,
+    "半导体":3,"锂":3,"光伏":3,"储能":3,"机器人":3,"创新药":3,"商业航天":3,"军工":3,
+    "黄金":3,"原油":3,"消费券":3};
+
+  var BULL = ["批准","获批","中标","增持","回购","预增","超预期","签约","涨价","突破","合作",
+              "上调","利好","放量","扭亏","新高","支持","补贴","减税","提速","投产","成功"];
+  var BEAR = ["减持","立案","处罚","亏损","预减","下调","终止","失败","被查","退市","违规",
+              "爆雷","跌停","利空","违约","冻结","警示","问询","禁止","限制","暂停","取消","下滑"];
+
+  var RECAP = /(收评|午评|晚报|早报|开盘|收盘|复盘|盘面|异动|龙虎榜|两市|全市场|三大指数|双创指数|涨停|跌停|午盘|个股下跌|个股上涨|涨幅榜|跌幅榜|公告集锦|公告汇总|公告精选|盘后公告|早间公告|晚间公告|公司公告|业绩汇总|要闻|一览|速览|盘点|集锦|汇总|快讯汇总|涨幅居前|跌幅居前|看点|前瞻|综述|导读|简报|盘前|盘后|隔夜)/;
+
+  var $q = document.getElementById("q"),
+      $go = document.getElementById("go"),
+      $st = document.getElementById("status"),
+      $rs = document.getElementById("results"),
+      $rp = document.getElementById("reports"),
+      $days = document.getElementById("days"),
+      $top = document.getElementById("top"),
+      $sort = document.getElementById("sort");
+
+  function esc(s){
+    return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function expandKeywords(spec){
+    var parts = spec.split(/[,，、|/]/).map(function(s){return s.trim();})
+                    .filter(function(s){return s.length;});
+    if(!parts.length) return [];
+    if(parts.length>1) return uniq(parts);
+    var k = parts[0];
+    for(var name in ALIAS){
+      if(k.toLowerCase()===name.toLowerCase() || ALIAS[name].indexOf(k)>=0)
+        return uniq([k].concat(ALIAS[name]));
+    }
+    return [k];
+  }
+  function uniq(a){ var o=[],seen={}; a.forEach(function(x){ if(!seen[x]){seen[x]=1;o.push(x);} }); return o; }
+
+  function parseTime(s){
+    if(!s) return null;
+    var t = new Date(String(s).replace(/-/g,"/"));
+    return isNaN(t.getTime()) ? null : t;
+  }
+
+  function relevance(item, kws){
+    var title = item.title||"", text = item.content||"";
+    var tl = title.toLowerCase(), bl = text.toLowerCase();
+    var hitT = kws.filter(function(k){ return tl.indexOf(k.toLowerCase())>=0; });
+    var hitB = kws.filter(function(k){ return bl.indexOf(k.toLowerCase())>=0; });
+    if(hitT.length) return {ok:true, hits:uniq(hitT.concat(hitB)), relTitle:true};
+    if(RECAP.test(title)) return {ok:false};
+    var cnt = 0;
+    kws.forEach(function(k){
+      var kk = k.toLowerCase(), i = 0;
+      while((i = bl.indexOf(kk, i)) >= 0){ cnt++; i += kk.length; }
+    });
+    if(cnt>=3) return {ok:true, hits:uniq(hitB), relTitle:false};
+    return {ok:false};
+  }
+
+  function bigrams(s){
+    s = String(s||"").replace(/[^\u4e00-\u9fa5A-Za-z0-9]/g,"");
+    var o = {}; for(var i=0;i<s.length-1;i++) o[s.substr(i,2)] = 1;
+    return o;
+  }
+  function jac(a,b){
+    var ka = Object.keys(a), n = 0;
+    if(!ka.length) return 0;
+    for(var i=0;i<ka.length;i++) if(b[ka[i]]) n++;
+    return n / Math.min(ka.length, Object.keys(b).length || 1);
+  }
+  function entity(t){
+    t = String(t||"").trim();
+    var m = t.match(/^[【\[]\s*([^：:】\]，,。]{2,24})\s*[：:]/) || t.match(/^([\u4e00-\u9fa5A-Za-z0-9]{3,20})\s*[：:]/);
+    if(!m) return null;
+    var e = m[1].trim();
+    if(/^(消息|据悉|记者|公告|报道|快讯)/.test(e)) return null;
+    return (e.length>=2 && e.length<=24) ? e : null;
+  }
+  function digits(s){
+    var m = String(s||"").match(/\d+(?:\.\d+)?/g) || [], o = {};
+    m.forEach(function(d){ if(d.length>=2) o[d]=1; });
+    return o;
+  }
+
+  function cluster(items){
+    var cs = [];
+    items.forEach(function(it){
+      var blob = (it.title||"") + " " + String(it.content||"").slice(0,80);
+      var tk = bigrams(blob), dg = digits(blob), ent = entity(it.title);
+      var best = null, bs = 0;
+      cs.forEach(function(c){
+        if(ent && c.ent && ent !== c.ent) return;
+        var sim = jac(tk, c.tk);
+        if(Object.keys(dg).length && Object.keys(c.dg).length)
+          sim *= (0.35 + 0.65*jac(dg, c.dg));
+        if(sim > bs){ bs = sim; best = c; }
+      });
+      if(best && bs >= 0.50){
+        best.items.push(it);
+        Object.keys(tk).forEach(function(k){ best.tk[k]=1; });
+        Object.keys(dg).forEach(function(k){ best.dg[k]=1; });
+      } else {
+        cs.push({items:[it], tk:tk, dg:dg, ent:ent});
+      }
+    });
+    return cs;
+  }
+
+  function polarity(s){
+    var b=0, e=0;
+    BULL.forEach(function(w){ if(s.indexOf(w)>=0) b++; });
+    BEAR.forEach(function(w){ if(s.indexOf(w)>=0) e++; });
+    return b>e ? "利好" : (e>b ? "利空" : "中性");
+  }
+
+  function buildRows(cs, now){
+    var rows = cs.map(function(c){
+      var its = c.items;
+      var srcs = uniq(its.map(function(i){ return i.media || "东方财富"; }));
+      var rep = its.reduce(function(a,b){
+        return ((b.title||"").length+(b.content||"").length) > ((a.title||"").length+(a.content||"").length) ? b : a;
+      });
+      var full = its.slice(0,3).map(function(i){ return (i.title||"")+" "+(i.content||""); }).join(" ");
+      var hits = uniq([].concat.apply([], its.map(function(i){ return i.kwHits||[]; })));
+      var kwScore = 0, kws = [];
+      for(var k in KW){ if(full.indexOf(k)>=0){ kwScore += KW[k]; kws.push(k); } }
+      var t = parseTime(rep.date);
+      var ageH = t ? Math.max((now - t)/3600000, 0) : 999;
+      var fresh = 2.0 * Math.pow(0.5, ageH/36);
+      var relTitle = its.some(function(i){ return i.relTitle; });
+
+      var heat = 3.0*(srcs.length-1) + Math.min(its.length,8) + fresh;
+      var impact = 2.0*kwScore + 0.8*Math.min(hits.length,4) + (relTitle?1.5:0);
+      return {
+        heatRaw: heat, impactRaw: impact,
+        nSrc: srcs.length, srcs: srcs, nItems: its.length,
+        title: rep.title, text: rep.content, date: rep.date, url: rep.url,
+        hits: hits, kws: kws, relTitle: relTitle,
+        recap: RECAP.test(rep.title||""),
+        dir: polarity(full)
+      };
+    });
+    if(!rows.length) return rows;
+    var mh = Math.max.apply(null, rows.map(function(r){return r.heatRaw;})) || 1;
+    var mi = Math.max.apply(null, rows.map(function(r){return r.impactRaw;})) || 1;
+    rows.forEach(function(r){
+      r.heat = Math.round(1000*r.heatRaw/mh)/10;
+      r.impact = Math.round(1000*r.impactRaw/mi)/10;
+      r.score = Math.round(10*(0.55*r.heat + 0.45*r.impact))/10;
+      // 综述/集锦类：罗列一堆板块，信息密度低
+      if(r.recap){ r.score = Math.round(r.score*7.5)/10; r.dir = "中性"; }
+      // 只靠正文顺带提及（标题完全没提该行业）：大幅降权，
+      // 否则「美股全线下跌」这种快讯会挤掉真正的行业新闻
+      if(!r.relTitle) r.score = Math.round(r.score*6)/10;
+    });
+    rows.sort(function(a,b){ return b.score - a.score; });
+    return rows;
+  }
+
+  function hi(text, kws){
+    var s = esc(text);
+    uniq(kws).sort(function(a,b){ return b.length-a.length; }).forEach(function(k){
+      if(!k) return;
+      var re = new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "gi");
+      s = s.replace(re, function(m){ return "<mark>"+m+"</mark>"; });
+    });
+    return s;
+  }
+
+  function jsonp(url, cb){
+    return new Promise(function(resolve, reject){
+      var s = document.createElement("script");
+      var done = false;
+      var timer = setTimeout(function(){ if(!done){ done=true; clean(); reject(new Error("请求超时")); } }, 15000);
+      function clean(){
+        clearTimeout(timer);
+        try{ delete window[cb]; }catch(e){ window[cb]=undefined; }
+        if(s.parentNode) s.parentNode.removeChild(s);
+      }
+      window[cb] = function(d){ if(done) return; done=true; clean(); resolve(d); };
+      s.onerror = function(){ if(done) return; done=true; clean(); reject(new Error("网络请求失败")); };
+      s.src = url;
+      document.head.appendChild(s);
+    });
+  }
+
+  function searchPage(kw, page, size){
+    var cb = "emcb_" + Date.now() + "_" + Math.floor(Math.random()*1e6);
+    var param = {
+      uid:"", keyword:kw, type:["cmsArticleWebOld"],
+      client:"web", clientType:"web", clientVersion:"curr",
+      param:{ cmsArticleWebOld:{
+        searchScope:"default", sort:"time", pageIndex:page,
+        pageSize:size, preTag:"", postTag:"" }}
+    };
+    var url = "https://search-api-web.eastmoney.com/search/jsonp?cb=" + cb +
+              "&param=" + encodeURIComponent(JSON.stringify(param));
+    return jsonp(url, cb).then(function(d){
+      d = d || {};
+      return ((d.result||{}).cmsArticleWebOld) || [];
+    });
+  }
+
+  function render(rows, kws, meta){
+    if(!rows.length){
+      $rs.innerHTML = '<div class="empty">没有找到相关新闻。换个词，或把时间范围放宽试试。</div>';
+      return;
+    }
+    var html = rows.map(function(r,i){
+      var chips = r.srcs.slice(0,4).map(function(s){
+        return '<span class="src">'+esc(s)+'</span>'; }).join("");
+      chips += r.kws.slice(0,5).map(function(k){ return '<span class="kw">'+esc(k)+'</span>'; }).join("");
+      chips += r.hits.slice(0,4).map(function(k){ return '<span class="kw">命中 '+esc(k)+'</span>'; }).join("");
+      var t = r.url ? '<a href="'+esc(r.url)+'" target="_blank" rel="noopener">'+hi(r.title,kws)+'</a>' : hi(r.title,kws);
+      var d = {"利好":"up","利空":"down"}[r.dir] || "flat";
+      return '<div class="card"><div class="rank">'+(i+1)+'</div><div class="body">'
+        + '<div class="head"><span class="score">'+r.score+'</span>'
+        + '<span class="dir '+d+'">'+esc(r.dir)+'</span>'
+        + '<span class="meta">'+esc(r.date)+' · 热度 '+r.heat+' / 影响 '+r.impact+'</span></div>'
+        + '<div class="title">'+t+'</div>'
+        + '<div class="res">共振 <b>'+r.nSrc+'</b> 家媒体（'+esc(r.srcs.slice(0,5).join("、"))+'）· 共 '+r.nItems+' 条</div>'
+        + '<div class="summary">'+hi(String(r.text||"").slice(0,240), kws)+'</div>'
+        + '<div class="chips2">'+chips+'</div></div></div>';
+    }).join("");
+    $rs.innerHTML = html;
+    $st.textContent = "「" + meta.spec + "」扩展 " + kws.length + " 词（检索 " +
+      (meta.terms||[]).join("、") + "）· 抓取 " + meta.fetched + " 条 → 相关 " + meta.kept +
+      " 条 → 归并 " + meta.clusters + " 个事件 · 展示 " +
+      Math.min(rows.length, meta.top) + " 条 · 耗时 " + meta.ms + "ms";
+      if(kws.length>1) $st.textContent += " ｜ " + kws.join("、");
+  }
+
+  var running = false;
+  function run(){
+    var spec = $q.value.trim();
+    if(!spec){ $st.textContent = "请输入行业关键词"; return; }
+    if(running) return;
+    running = true; $go.disabled = true;
+    var kws = expandKeywords(spec);
+    var days = parseInt($days.value,10), top = parseInt($top.value,10),
+        sort = $sort.value;
+    var terms = kws.slice(0,2);          // 主词 + 第一个同义词，明显提高召回
+    var pages = Math.min(3, Math.max(1, Math.ceil(top/10) + 1));
+    var t0 = Date.now(), got = [], failed = 0;
+
+    $rp.style.display = "none";
+    $rs.innerHTML = "";
+    $st.textContent = "检索中…";
+
+    var tasks = [];
+    terms.forEach(function(term){
+      for(var p=1; p<=pages; p++){
+        tasks.push(searchPage(term, p, 30).catch(function(){ failed++; return []; }));
+      }
+    });
+    Promise.all(tasks).then(function(res){
+      res.forEach(function(arr){
+        arr.forEach(function(it){ got.push(it); });
+      });
+      var now = Date.now();
+      var since = now - days*86400000;
+      var kept = [], seen = {};
+      got.forEach(function(it){
+        var t = parseTime(it.date);
+        if(t && t.getTime() < since) return;
+        var key = (it.title||"") + "|" + (it.date||"");
+        if(seen[key]) return;
+        seen[key] = 1;
+        var r = relevance(it, kws);
+        if(!r.ok) return;
+        it.kwHits = r.hits; it.relTitle = r.relTitle;
+        kept.push(it);
+      });
+      var cs = cluster(kept);
+      var rows = buildRows(cs, now);
+      if(sort === "time"){
+        rows.sort(function(a,b){
+          var ta = parseTime(a.date) || new Date(0), tb = parseTime(b.date) || new Date(0);
+          return tb - ta;
+        });
+        rows.sort(function(a,b){ return (a.relTitle?0:1) - (b.relTitle?0:1); });
+      }
+      render(rows, kws, {spec:spec, terms:terms, fetched:got.length, kept:kept.length,
+                         clusters:cs.length, top:top, ms:Date.now()-t0});
+      if(failed) $st.textContent += " · " + failed + " 页请求失败";
+      running = false; $go.disabled = false;
+      location.hash = "q=" + encodeURIComponent(spec) +
+                       "&days=" + days + "&top=" + top + "&sort=" + sort;
+    }).catch(function(e){
+      $st.textContent = "检索失败：" + e.message;
+      running = false; $go.disabled = false;
+    });
+  }
+
+  // 快捷标签
+  document.getElementById("chips").innerHTML = PRESETS.map(function(k){
+    return '<span class="chip" data-k="'+esc(k)+'">'+esc(k)+'</span>'; }).join("");
+  document.getElementById("chips").addEventListener("click", function(e){
+    var k = e.target.getAttribute && e.target.getAttribute("data-k");
+    if(k){ $q.value = k; run(); }
+  });
+
+  $go.addEventListener("click", run);
+  $q.addEventListener("keydown", function(e){ if(e.key === "Enter") run(); });
+  [$days,$top,$sort].forEach(function(el){ el.addEventListener("change", function(){ if($q.value.trim()) run(); }); });
+
+  // 从 URL 恢复
+  (function(){
+    var h = location.hash.replace(/^#/,""), o = {};
+    h.split("&").forEach(function(p){ var kv = p.split("="); if(kv[0]) o[kv[0]] = decodeURIComponent(kv[1]||""); });
+    if(o.days) $days.value = o.days;
+    if(o.top)  $top.value  = o.top;
+    if(o.sort) $sort.value = o.sort;
+    if(o.q){ $q.value = o.q; run(); }
+  })();
+})();
+</script></body></html>"""
+
+
 def build_index(outdir, title="财经热点 · 行业检索"):
-    """扫描 outdir 里已生成的 html，重建导航页 index.html（方便手机直接打开）。"""
+    """扫描 outdir 里已生成的 html，重建首页：上部是实时检索，下部是历史报告。"""
     try:
         items = []
         for fn in os.listdir(outdir):
@@ -977,34 +1444,9 @@ def build_index(outdir, title="财经热点 · 行业检索"):
     if not rows:
         rows = ['<div class="empty">还没有生成任何报告。到 Actions 里跑一次吧。</div>']
 
-    html = f"""<!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{esc(title)}</title>
-<style>
-  :root{{--bg:#f7f7f5;--card:#fff;--line:#e6e4de;--txt:#22221f;--muted:#77776f;--accent:#185FA5}}
-  *{{box-sizing:border-box}}
-  body{{margin:0;padding:28px 16px 48px;background:var(--bg);color:var(--txt);
-       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-       line-height:1.6}}
-  .wrap{{max-width:680px;margin:0 auto}}
-  h1{{font-size:20px;font-weight:600;margin:0 0 4px}}
-  .sub{{color:var(--muted);font-size:13px;margin-bottom:20px}}
-  .row{{display:flex;align-items:center;gap:10px;background:var(--card);
-       border:1px solid var(--line);border-radius:10px;padding:12px 14px;
-       margin-bottom:8px;text-decoration:none;color:inherit}}
-  .row:hover{{border-color:var(--accent)}}
-  .tag{{flex:0 0 auto;font-size:11px;padding:2px 7px;border-radius:4px}}
-  .tag.hot{{background:#eaf1fa;color:#185FA5}}
-  .tag.search{{background:#fdf0e8;color:#b5530f}}
-  .name{{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
-  .time{{flex:0 0 auto;font-size:12px;color:var(--muted)}}
-  .empty{{color:var(--muted);font-size:13px;padding:20px 0}}
-</style></head><body><div class="wrap">
-  <h1>{esc(title)}</h1>
-  <div class="sub">按生成时间倒序 · 点击查看</div>
-  {''.join(rows)}
-</div></body></html>"""
+    html = (INDEX_TEMPLATE
+            .replace("__TITLE__", esc(title))
+            .replace("__ROWS__", "\n    ".join(rows)))
     p = os.path.join(outdir, "index.html")
     try:
         open(p, "w", encoding="utf-8").write(html)
@@ -1205,9 +1647,15 @@ def main():
     ap.add_argument("--outdir", default=DIR)
     ap.add_argument("--pages", type=int, default=MAX_PAGES)
     ap.add_argument("--quiet", action="store_true", help="不打印正文，只写文件")
+    ap.add_argument("--build-index", action="store_true",
+                    help="只重建首页 docs/index.html（含搜索入口）后退出")
     args = ap.parse_args()
 
     load_cache()
+    if args.build_index:
+        p = build_index(args.outdir)
+        warn(f"[索引] {p}" if p else "[索引] 失败")
+        return 0 if p else 1
     if args.keyword:
         return run_search(args)
     return run_hot(args)
