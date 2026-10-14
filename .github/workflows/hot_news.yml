@@ -1,0 +1,104 @@
+name: 财经热点 · 行业检索
+
+on:
+  schedule:
+    # GitHub Actions 用 UTC，北京时间 = UTC+8
+    - cron: '35 0 * * 1-5'    # 北京 08:35 → 隔夜报
+    - cron: '05 4 * * 1-5'    # 北京 12:05 → 上午盘中报
+    - cron: '15 7 * * 1-5'    # 北京 15:15 → 盘后报
+  workflow_dispatch:
+    inputs:
+      keyword:
+        description: '行业关键词（填了就只跑检索；留空则跑时段热点）。可用逗号指定多个'
+        required: false
+        default: ''
+      days:
+        description: '检索回溯天数'
+        required: false
+        default: '7'
+      top:
+        description: '输出条数'
+        required: false
+        default: '10'
+      start:
+        description: '热点模式-起始 HH:MM'
+        required: false
+        default: '15:00'
+      end:
+        description: '热点模式-结束 HH:MM'
+        required: false
+        default: '08:30'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: hot-news
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 纯标准库，无需 pip install
+
+      # ---- 手动检索模式：只在填了 keyword 时执行 ----
+      - name: 行业检索（手动触发）
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.keyword != ''
+        run: |
+          python hot_news.py \
+            --keyword "${{ github.event.inputs.keyword }}" \
+            --days "${{ github.event.inputs.days }}" \
+            --top  "${{ github.event.inputs.top }}" \
+            --outdir docs --out md,html,json
+
+      # ---- 时段热点：定时跑，或手动触发且未填 keyword ----
+      - name: 隔夜热点（08:35 / 手动默认）
+        if: github.event.schedule == '35 0 * * 1-5' || (github.event_name == 'workflow_dispatch' && github.event.inputs.keyword == '')
+        run: |
+          python hot_news.py --start "${{ github.event.inputs.start || '15:00' }}" \
+                             --end "${{ github.event.inputs.end || '08:30' }}" \
+                             --top 5 --outdir docs --out md,html,json
+
+      - name: 上午盘中热点（12:05）
+        if: github.event.schedule == '05 4 * * 1-5'
+        run: python hot_news.py --start 09:30 --end 11:30 --top 5 --outdir docs --out md,html,json
+
+      - name: 盘后热点（15:15）
+        if: github.event.schedule == '15 7 * * 1-5'
+        run: python hot_news.py --start 13:00 --end 15:00 --top 5 --outdir docs --out md,html,json
+
+      - name: 提交结果
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --staged --quiet; then
+            echo "没有新内容"
+          else
+            git commit -m "chore: 更新报告 $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
