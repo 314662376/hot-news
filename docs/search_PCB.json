@@ -1,42 +1,13 @@
 {
   "window": [
-    "2026-10-08 01:34:24.577684",
-    "2026-10-15 01:34:24.577684"
+    "2026-10-07 17:38:48.478413",
+    "2026-10-14 17:38:48.478413"
   ],
-  "heading": "PCB 行业新闻 TOP8",
+  "heading": "PCB 行业新闻 TOP10",
   "keywords": "PCB、覆铜板、印制电路板、线路板、HDI、IC载板、CCL、铜箔",
   "rows": [
     {
-      "heat_raw": 6.86,
-      "impact_raw": 14.0,
-      "n_src": 2,
-      "srcs": [
-        "深圳商报·读创",
-        "财联社"
-      ],
-      "n_items": 2,
-      "buzz": 0,
-      "flag": 0,
-      "title": "嘉元科技前三季度净利预增至多1318.92%！铜箔产销量显著增长、非经常性损益大增",
-      "text": "资料显示，嘉元科技主要从事各类高性能电解铜箔的研究、制造和销售，主要产品为锂电铜箔、电子电路铜箔，主要用于锂离子电池的负极集流体、覆铜板（CCL）、印制电路板（PCB）的制造。 　　来源：读创财经",
-      "time": "2026-10-14 16:19:06",
-      "secs": [],
-      "secs_raw": [],
-      "tags": [],
-      "kw": [
-        "预增",
-        "锂"
-      ],
-      "dir": "利好",
-      "url": "http://finance.eastmoney.com/a/202610143895492387.html",
-      "recap": false,
-      "rel_title": true,
-      "heat": 100.0,
-      "impact": 50.0,
-      "score": 77.5
-    },
-    {
-      "heat_raw": 6.698,
+      "heat_raw": 6.978,
       "impact_raw": 14.0,
       "n_src": 2,
       "srcs": [
@@ -60,12 +31,42 @@
       "url": "http://finance.eastmoney.com/a/202610143895529833.html",
       "recap": false,
       "rel_title": false,
-      "heat": 97.6,
+      "heat": 97.9,
       "impact": 50.0,
-      "score": 76.2
+      "score": 76.3
     },
     {
-      "heat_raw": 6.855,
+      "heat_raw": 2.872,
+      "impact_raw": 28.0,
+      "n_src": 1,
+      "srcs": [
+        "证券时报网"
+      ],
+      "n_items": 1,
+      "buzz": 0,
+      "flag": 0,
+      "title": "覆铜板与黄金“双引擎”驱动业绩爆发 宝鼎科技2026年前三季度净利预增536.88%至614.07%",
+      "text": "覆铜板是PCB制造的基础材料，PCB是覆铜板加工后的成品，二者构成紧密的上下游供应链关系。10月以来，PCB产业链多家公司密集披露前三季度业绩预告，整体呈现高景气共振态势。从行业层面看，本轮覆铜板景气上行的核心驱动力来自AI算力硬件的结构性革新。",
+      "time": "2026-10-14 14:12:53",
+      "secs": [],
+      "secs_raw": [],
+      "tags": [],
+      "kw": [
+        "业绩预告",
+        "预增",
+        "算力",
+        "黄金"
+      ],
+      "dir": "利好",
+      "url": "http://finance.eastmoney.com/a/202610143895361217.html",
+      "recap": false,
+      "rel_title": true,
+      "heat": 40.3,
+      "impact": 100.0,
+      "score": 67.2
+    },
+    {
+      "heat_raw": 7.128,
       "impact_raw": 7.124,
       "n_src": 1,
       "srcs": [
@@ -91,82 +92,23 @@
       "url": "https://finance.eastmoney.com/a/202610143895452891.html",
       "recap": false,
       "rel_title": true,
-      "heat": 99.9,
+      "heat": 100.0,
       "impact": 25.4,
       "score": 66.4
     },
     {
-      "heat_raw": 2.607,
-      "impact_raw": 28.0,
-      "n_src": 1,
-      "srcs": [
-        "证券时报网"
-      ],
-      "n_items": 1,
-      "buzz": 0,
-      "flag": 0,
-      "title": "覆铜板与黄金“双引擎”驱动业绩爆发 宝鼎科技2026年前三季度净利预增536.88%至614.07%",
-      "text": "覆铜板是PCB制造的基础材料，PCB是覆铜板加工后的成品，二者构成紧密的上下游供应链关系。10月以来，PCB产业链多家公司密集披露前三季度业绩预告，整体呈现高景气共振态势。从行业层面看，本轮覆铜板景气上行的核心驱动力来自AI算力硬件的结构性革新。",
-      "time": "2026-10-14 14:12:53",
-      "secs": [],
-      "secs_raw": [],
-      "tags": [],
-      "kw": [
-        "业绩预告",
-        "预增",
-        "算力",
-        "黄金"
-      ],
-      "dir": "利好",
-      "url": "http://finance.eastmoney.com/a/202610143895361217.html",
-      "recap": false,
-      "rel_title": true,
-      "heat": 38.0,
-      "impact": 100.0,
-      "score": 65.9
-    },
-    {
-      "heat_raw": 2.738,
-      "impact_raw": 22.0,
-      "n_src": 1,
-      "srcs": [
-        "数据宝"
-      ],
-      "n_items": 1,
-      "buzz": 0,
-      "flag": 0,
-      "title": "PCB龙头，业绩大增！行业首条，吉瓦时级全固态电池产线投产，产业化元年渐近",
-      "text": "包括沪电股份在内，A股PCB产业链已有9股公布前三季度业绩预告，均为预喜，按预告净利润下限计算，宝鼎科技、兴森科技、金禄电子等6股增幅均在100%以上。 　　随着AI需求持续爆发，近期PCB产业链再次传来涨价消息。",
-      "time": "2026-10-14 18:17:00",
-      "secs": [],
-      "secs_raw": [],
-      "tags": [],
-      "kw": [
-        "业绩预告",
-        "净利润",
-        "固态电池"
-      ],
-      "dir": "利好",
-      "url": "http://finance.eastmoney.com/a/202610143895596311.html",
-      "recap": false,
-      "rel_title": true,
-      "heat": 39.9,
-      "impact": 78.6,
-      "score": 57.3
-    },
-    {
-      "heat_raw": 2.79,
+      "heat_raw": 2.949,
       "impact_raw": 14.0,
       "n_src": 1,
       "srcs": [
-        "中国基金报"
+        "深圳商报·读创"
       ],
       "n_items": 1,
       "buzz": 0,
       "flag": 0,
-      "title": "业绩利好！688388，最高预增超3300%",
-      "text": "公司主营各类高性能电解铜箔的研发、生产和销售，主要产品包括锂电铜箔和电子电路铜箔，广泛应用于锂离子电池负极集流体、覆铜板（CCL）及印制电路板（PCB）等领域，是宁德时代锂电铜箔的核心供应商之一，产能与市场占有率稳居国内锂电铜箔行业第一梯队。",
-      "time": "2026-10-14 19:48:00",
+      "title": "嘉元科技前三季度净利预增至多1318.92%！铜箔产销量显著增长、非经常性损益大增",
+      "text": "资料显示，嘉元科技主要从事各类高性能电解铜箔的研究、制造和销售，主要产品为锂电铜箔、电子电路铜箔，主要用于锂离子电池的负极集流体、覆铜板（CCL）、印制电路板（PCB）的制造。 　　来源：读创财经",
+      "time": "2026-10-14 16:19:06",
       "secs": [],
       "secs_raw": [],
       "tags": [],
@@ -175,43 +117,15 @@
         "锂"
       ],
       "dir": "利好",
-      "url": "http://finance.eastmoney.com/a/202610143895628798.html",
+      "url": "http://finance.eastmoney.com/a/202610143895492387.html",
       "recap": false,
-      "rel_title": false,
-      "heat": 40.7,
+      "rel_title": true,
+      "heat": 41.4,
       "impact": 50.0,
-      "score": 44.9
+      "score": 45.3
     },
     {
-      "heat_raw": 2.933,
-      "impact_raw": 12.0,
-      "n_src": 1,
-      "srcs": [
-        "中国基金报"
-      ],
-      "n_items": 1,
-      "buzz": 0,
-      "flag": 0,
-      "title": "三则海外“小作文”砸出科技“黄金坑”？机构共识：实质影响有限，科技产业趋势未逆转",
-      "text": "此外，对于市场流传的“美方供应链剔除中国PCB”消息，有机构人士表示，实际上仅聚焦于国防军工PCB供应链，并不涉及商用PCB，而全球PCB主力产能与供应基本为中国主导，AI PCB的爆发式需求无法与中国脱钩。",
-      "time": "2026-10-14 23:48:04",
-      "secs": [],
-      "secs_raw": [],
-      "tags": [],
-      "kw": [
-        "军工",
-        "黄金"
-      ],
-      "dir": "中性",
-      "url": "http://stock.eastmoney.com/a/202610143895842495.html",
-      "recap": false,
-      "rel_title": false,
-      "heat": 42.8,
-      "impact": 42.9,
-      "score": 42.8
-    },
-    {
-      "heat_raw": 2.702,
+      "heat_raw": 2.983,
       "impact_raw": 12.0,
       "n_src": 1,
       "srcs": [
@@ -234,9 +148,143 @@
       "url": "http://finance.eastmoney.com/a/202610143895531348.html",
       "recap": false,
       "rel_title": true,
-      "heat": 39.4,
+      "heat": 41.8,
       "impact": 42.9,
-      "score": 41.0
+      "score": 42.3
+    },
+    {
+      "heat_raw": 2.7880000000000003,
+      "impact_raw": 20.0,
+      "n_src": 1,
+      "srcs": [
+        "每日经济新闻"
+      ],
+      "n_items": 1,
+      "buzz": 0,
+      "flag": 0,
+      "title": "超3600只个股下跌！AI漫剧、PCB概念走强，风电、汽车板块走弱 | A股早盘",
+      "text": "板块方面，传媒板块持续走高，AI漫剧方向领涨，慈文传媒、新经典走出4连板，掌阅科技7天4板，德才股份6天4板，果麦文化3天2板，富春股份20cm涨停；PCB概念延续强势，超声电子2连板，澳弘电子、宝鼎科技、沃特股份涨停；煤炭板块郑州煤电涨停，陕西煤业创历史新高，中国神华创2007年",
+      "time": "2026-10-14 11:50:14",
+      "secs": [],
+      "secs_raw": [],
+      "tags": [],
+      "kw": [
+        "涨停",
+        "连板"
+      ],
+      "dir": "中性",
+      "url": "http://finance.eastmoney.com/a/202610143895419910.html",
+      "recap": true,
+      "rel_title": true,
+      "heat": 39.1,
+      "impact": 71.4,
+      "score": 40.2
+    },
+    {
+      "heat_raw": 2.752,
+      "impact_raw": 10.0,
+      "n_src": 1,
+      "srcs": [
+        "证券时报网"
+      ],
+      "n_items": 1,
+      "buzz": 0,
+      "flag": 0,
+      "title": "A股，低开高走！002696，4连板！",
+      "text": "机构研报指出，看好PCB/CCL景气周期的持续性，短期看，受益于AI领域的迭代放量及传统领域的涨价，2026下半年业绩有望表现强势；中长期则有望受益于PCB工艺及材料的持续迭代升级，ASIC、载板、mSAP、PTFE等细分方向均有望实现超额增长。",
+      "time": "2026-10-14 10:46:00",
+      "secs": [],
+      "secs_raw": [],
+      "tags": [],
+      "kw": [
+        "连板"
+      ],
+      "dir": "利好",
+      "url": "http://finance.eastmoney.com/a/202610143895228140.html",
+      "recap": false,
+      "rel_title": false,
+      "heat": 38.6,
+      "impact": 35.7,
+      "score": 37.3
+    },
+    {
+      "heat_raw": 2.923,
+      "impact_raw": 8.0,
+      "n_src": 1,
+      "srcs": [
+        "新京报"
+      ],
+      "n_items": 1,
+      "buzz": 0,
+      "flag": 0,
+      "title": "IPO新观察｜东山精密闯关港股，业绩高增难掩负债压力",
+      "text": "从业务结构看，报告期内传统PCB业务仍是公司收入的基本盘，对整体收入规模形成支撑。东山精密表示：“随着我们继续利用我们的独特能力，为从数据中心到边缘侧的端到云AI应用提供PCB，我们预计PCB的销售将继续增长，并仍然为主要的收入来源。",
+      "time": "2026-10-14 15:37:00",
+      "secs": [],
+      "secs_raw": [],
+      "tags": [],
+      "kw": [
+        "IPO"
+      ],
+      "dir": "中性",
+      "url": "http://finance.eastmoney.com/a/202610143895451417.html",
+      "recap": false,
+      "rel_title": false,
+      "heat": 41.0,
+      "impact": 28.6,
+      "score": 35.4
+    },
+    {
+      "heat_raw": 2.762,
+      "impact_raw": 6.0,
+      "n_src": 1,
+      "srcs": [
+        "界面新闻"
+      ],
+      "n_items": 1,
+      "buzz": 0,
+      "flag": 0,
+      "title": "哪些公司有望被纳入“新版恒科”？阿里“千问Go”即将发布！小米、美团大涨超4%，港股通互联网ETF汇添富(159280)标的指数大涨超2%！",
+      "text": "建议关注科技板块——AI强劲需求带动PCB量价齐升，上游覆铜板缺货涨价持续，英伟达新一代AI系统已投入生产应用，产业链景气度有实质订单支撑。关注光模块/光纤、PCB、高速连接、AI服务器、国产AI芯片与晶圆代工、电力配套及大厂模型进展。",
+      "time": "2026-10-14 11:04:04",
+      "secs": [],
+      "secs_raw": [],
+      "tags": [],
+      "kw": [
+        "芯片"
+      ],
+      "dir": "利好",
+      "url": "http://stock.eastmoney.com/a/202610143895430063.html",
+      "recap": false,
+      "rel_title": false,
+      "heat": 38.7,
+      "impact": 21.4,
+      "score": 30.9
+    },
+    {
+      "heat_raw": 2.987,
+      "impact_raw": 0.0,
+      "n_src": 1,
+      "srcs": [
+        "21世纪经济报道"
+      ],
+      "n_items": 1,
+      "buzz": 0,
+      "flag": 0,
+      "title": "机构预估2027年AI服务器产值年增逾90%，整机放量带动细分产业链方向或受益丨机会前瞻",
+      "text": "AI服务器：GPU高阶HDI板、800G/1.6T光模块PCB、服务器Birch stream平台高速PCB、112G交换机PCB、AI 224G交换机PCB、新一代AI高速PCB等产品实现了量产，在超细线30μm/30μm FPC产品等产品技术上取得了重大突破，积极推进100层以上",
+      "time": "2026-10-14 17:17:56",
+      "secs": [],
+      "secs_raw": [],
+      "tags": [],
+      "kw": [],
+      "dir": "利好",
+      "url": "http://finance.eastmoney.com/a/202610143895538477.html",
+      "recap": false,
+      "rel_title": false,
+      "heat": 41.9,
+      "impact": 0.0,
+      "score": 23.0
     }
   ]
 }
