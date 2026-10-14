@@ -85,6 +85,8 @@ jobs:
             echo "没有新内容"
           else
             git commit -m "chore: 更新报告 $(date -u +%Y-%m-%dT%H:%MZ)"
+            # 先 rebase 再推，避免和手动推送产生分叉
+            git pull --rebase --autostash origin "${{ github.ref_name }}" || true
             git push
           fi
 
