@@ -35,7 +35,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # ----------------------------------------------------------------------------
 # 配置
@@ -464,7 +464,7 @@ def freshness_bonus(t, now=None, half_life_h=36.0, cap=2.0):
     """越新越加分，指数衰减，上限 cap。"""
     if not t:
         return 0.0
-    now = now or datetime.now()
+    now = now or bh_now()
     age_h = max((now - t).total_seconds() / 3600.0, 0.0)
     return round(cap * (0.5 ** (age_h / half_life_h)), 3)
 
@@ -684,6 +684,16 @@ def fmt_sec(s):
 # 时间
 # ----------------------------------------------------------------------------
 
+# 全网新闻时间戳都是北京时间；GitHub Actions 跑在 UTC，故一切「现在」都以北京时间
+# 为基准，否则「09:30–11:30」这类窗口会被误判成“还在未来”而整体回退一天。
+BH_TZ = timezone(timedelta(hours=8))
+
+
+def bh_now():
+    """北京时间的 naive datetime（与新闻时间戳同基准）。"""
+    return datetime.now(BH_TZ).replace(tzinfo=None)
+
+
 def parse_time(s):
     for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
         try:
@@ -700,7 +710,7 @@ def resolve_window(a):
     - 指定时：按 --date（缺省为今天）构造；若 end < start 视为跨天（如 15:00→08:30）；
       若整个窗口还在未来（凌晨问隔夜时段就会这样），整体回退一天。
     """
-    now = datetime.now()
+    now = bh_now()
     if a.start and a.end:
         base = datetime.strptime(a.date, "%Y-%m-%d") if a.date else now
         sh, sm = map(int, a.start.split(":"))
@@ -1432,7 +1442,7 @@ def build_index(outdir, title="财经热点 · 行业检索"):
 
     rows = []
     for mt, fn, kind in items:
-        t = datetime.fromtimestamp(mt).strftime("%m-%d %H:%M")
+        t = datetime.fromtimestamp(mt, BH_TZ).strftime("%m-%d %H:%M")
         label = esc(fn[:-5])
         cls = "tag search" if kind == "行业检索" else "tag hot"
         rows.append(
@@ -1504,7 +1514,7 @@ def _collect_live(pages, label="抓取"):
 
 def run_search(args):
     """行业关键词搜索模式：主动触发，不参与定时采集。"""
-    now = datetime.now()
+    now = bh_now()
     kws = expand_keywords(args.keyword)
     if not kws:
         warn("[错误] 关键词为空")
