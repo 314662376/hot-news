@@ -1,0 +1,168 @@
+{
+  "window": [
+    "2026-10-22 13:00:00",
+    "2026-10-22 15:00:59"
+  ],
+  "heading": "财经时段热点 TOP5",
+  "keywords": null,
+  "rows": [
+    {
+      "heat_raw": 5.32,
+      "impact_raw": 19.921,
+      "n_src": 1,
+      "srcs": [
+        "东财"
+      ],
+      "n_items": 1,
+      "buzz": 36,
+      "flag": 0,
+      "title": "创业板指跌逾4%",
+      "text": "【创业板指跌逾4%】指数持续走弱，创业板指下挫跌逾4.00%，沪指跌1.50%，深成指跌2.88%。算力硬件、贵金属、医药生物、半导体芯片等方向跌幅居前，沪深京三市下跌个股近4900只。",
+      "time": "2026-10-22 13:32:41",
+      "secs": [
+        "创业板LOF(160223) -3.19%",
+        "国泰创业板指数(LOF)A(160223) -4.02%"
+      ],
+      "secs_raw": [
+        "0.160223",
+        "150.160223"
+      ],
+      "tags": [],
+      "kw": [
+        "算力",
+        "芯片",
+        "半导体"
+      ],
+      "dir": "中性",
+      "url": "https://finance.eastmoney.com/a/202610223903928658.html",
+      "recap": false,
+      "rel_title": false,
+      "is_search": false,
+      "heat": 76.0,
+      "impact": 99.6,
+      "score": 86.6
+    },
+    {
+      "heat_raw": 7.0,
+      "impact_raw": 16.0,
+      "n_src": 1,
+      "srcs": [
+        "东财"
+      ],
+      "n_items": 1,
+      "buzz": 99,
+      "flag": 0,
+      "title": "半导体板块盘中快速反弹 华天科技直线涨停",
+      "text": "半导体板块快速反弹，华天科技直线涨停，大普微、德明利、有研新材、中科仪、炬芯科技跟涨。",
+      "time": "2026-10-22 13:58:53",
+      "secs": [],
+      "secs_raw": [
+        "90.BK0459",
+        "90.BK1036"
+      ],
+      "tags": [],
+      "kw": [
+        "涨停",
+        "半导体"
+      ],
+      "dir": "中性",
+      "url": "https://finance.eastmoney.com/a/202610223903972758.html",
+      "recap": true,
+      "rel_title": false,
+      "is_search": false,
+      "heat": 100.0,
+      "impact": 80.0,
+      "score": 68.2
+    },
+    {
+      "heat_raw": 4.0,
+      "impact_raw": 14.0,
+      "n_src": 1,
+      "srcs": [
+        "东财"
+      ],
+      "n_items": 1,
+      "buzz": 25,
+      "flag": 0,
+      "title": "Anthropic“史上最大IPO” 李大霄：或引发美股科技板块乃至全球股市资金虹吸效应",
+      "text": "【Anthropic“史上最大IPO” 李大霄：或引发美股科技板块乃至全球股市资金虹吸效应】据媒体援引知情人士报道，Anthropic(美国人工智能股份有限公司)最快将于本周五公开提交S-1招股说明书。前券商首席经济学家、深圳市决策咨询委员会委员李大霄对中新经纬表示，Anthropic万亿级的估值、千亿级的融资规模，或将对美股科技板块乃至全球股市形成资金虹吸效应。",
+      "time": "2026-10-22 14:29:45",
+      "secs": [],
+      "secs_raw": [],
+      "tags": [],
+      "kw": [
+        "IPO",
+        "人工智能"
+      ],
+      "dir": "中性",
+      "url": "https://finance.eastmoney.com/a/202610223903994636.html",
+      "recap": false,
+      "rel_title": false,
+      "is_search": false,
+      "heat": 57.1,
+      "impact": 70.0,
+      "score": 62.9
+    },
+    {
+      "heat_raw": 7.0,
+      "impact_raw": 1.9209999999999998,
+      "n_src": 1,
+      "srcs": [
+        "东财"
+      ],
+      "n_items": 1,
+      "buzz": 56,
+      "flag": 0,
+      "title": "创业板指午后失守2600点 较历史高点已回撤超40%",
+      "text": "创业板指午后失守2600点，日内跌超3.5%，较今年6月的历史高点已回撤超40%。",
+      "time": "2026-10-22 13:11:34",
+      "secs": [
+        "创业板LOF(160223) -3.19%",
+        "国泰创业板指数(LOF)A(160223) -4.02%"
+      ],
+      "secs_raw": [
+        "0.160223",
+        "150.160223"
+      ],
+      "tags": [],
+      "kw": [],
+      "dir": "中性",
+      "url": "https://finance.eastmoney.com/a/202610223903879557.html",
+      "recap": false,
+      "rel_title": false,
+      "is_search": false,
+      "heat": 100.0,
+      "impact": 9.6,
+      "score": 59.3
+    },
+    {
+      "heat_raw": 1.6,
+      "impact_raw": 20.0,
+      "n_src": 1,
+      "srcs": [
+        "东财"
+      ],
+      "n_items": 1,
+      "buzz": 5,
+      "flag": 0,
+      "title": "中证协发文促进证券公司并购重组规范有序开展",
+      "text": "【中证协发文促进证券公司并购重组规范有序开展】中国证券业协会日前组织编写了《证券行业示范实践第8号——证券公司并购重组》，促进证券公司并购重组规范有序开展，进一步提升整合质效。",
+      "time": "2026-10-22 14:07:32",
+      "secs": [],
+      "secs_raw": [],
+      "tags": [],
+      "kw": [
+        "重组",
+        "并购"
+      ],
+      "dir": "中性",
+      "url": "https://finance.eastmoney.com/a/202610223903978893.html",
+      "recap": false,
+      "rel_title": false,
+      "is_search": false,
+      "heat": 22.9,
+      "impact": 100.0,
+      "score": 57.6
+    }
+  ]
+}
